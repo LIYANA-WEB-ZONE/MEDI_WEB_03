@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intemedical Potong Pasir</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans p-4">
+
+<div class="bg-white shadow-2xl rounded-3xl p-6 sm:p-8 w-full max-w-md mx-auto mt-0">
+  
+  <div class="text-center mb-6">
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-800">INTEMEDICAL POTONG PASIR</h1>
+    <p class="text-xs sm:text-sm text-gray-600">51 Upper Serangoon Road, #01-29 The Poiz Centre,<br/> Singapore 347697</p>
+    <p class="text-xs sm:text-sm text-gray-600">Tel: (65) 62426284 | Fax: (65) 62414125</p>
+  </div>
+  
+  <div class="flex mb-6 flex-col sm:flex-row gap-2">
+    <input type="text" id="reportNumber" placeholder="Enter Report Number" 
+           class="flex-1 border border-gray-300 rounded-2xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-center">
+    <button onclick="searchReport()" 
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 sm:py-0 rounded-2xl transition">Search</button>
+  </div>
+
+  <div id="result" class="bg-gray-50 p-4 sm:p-6 rounded-2xl shadow-inner text-gray-700 space-y-4"></div>
+</div>
+
+<script>
+  // දිනය DD/MM/YYYY ලෙස සකසන function එක
+  function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; 
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
+  }
+
+  async function searchReport() {
+    const rptNo = document.getElementById("reportNumber").value.trim();
+    const resultDiv = document.getElementById("result");
+    
+    if (!rptNo) return;
+
+    resultDiv.innerHTML = `<p class="text-center text-gray-500">Searching...</p>`;
+
+    try {
+      const scriptURL = "https://script.google.com/macros/s/AKfycbz7MezzHWPE11qASAV-tYEJUhweZDiyA2ejzmH-jGFCrdwNg5TfBncq-6iN9PByN1RL/exec"; 
+      
+      const response = await fetch(`${scriptURL}?id=${rptNo}`);
+      const rpt = await response.json();
+
+      if (rpt) {
+        resultDiv.innerHTML = `
+          <div class="border-b pb-2 mb-2 text-center">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-800">${rpt.test}</h2>
+            <p class="text-sm text-gray-500">MC Number: ${rptNo}</p>
+          </div>
+
+          <div class="space-y-1">
+            <p><span class="font-semibold">Name:</span> ${rpt.name}</p>
+            <p><span class="font-semibold">NRIC/Passport:</span> ${rpt.nric}</p>
+          </div>
+
+          <div class="mt-2 space-y-1">
+            <p><span class="font-semibold">Start Date:</span> ${formatDate(rpt.startDate)}</p>
+            <p><span class="font-semibold">End Date:</span> ${formatDate(rpt.endDate)}</p>
+            <p><span class="font-semibold">Symptoms Started:</span> ${formatDate(rpt.symptomsStart)}</p>
+          </div>
+
+          <div class="mt-2 space-y-1 border-t pt-2">
+            <p><span class="font-semibold">Doctor:</span> ${rpt.doctor}</p>
+            <p><span class="font-semibold">Remarks:</span> ${rpt.remarks}</p>
+          </div>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p class="text-red-500 font-semibold text-center">Report not found!</p>`;
+      }
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="text-red-500 font-semibold text-center">Error fetching data!</p>`;
+    }
+  }
+</script>
+
+</body>
+</html>
